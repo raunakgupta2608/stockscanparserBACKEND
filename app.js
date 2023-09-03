@@ -2,9 +2,10 @@ const Joi = require("joi");
 Joi.objectId = require("joi-objectid")(Joi);
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 
 mongoose
-  .connect("mongodb://localhost/mprglobalsolutions", {
+  .connect("mongodb://localhost/azularc", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
@@ -12,13 +13,12 @@ mongoose
   .catch((err) => console.error("Couldn't connect to MongoDB... ", err));
 
 const userRoute = require("./routes/users");
-const auth = require("./routes/auth");
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 app.use("/users", userRoute);
-app.use("/auth", auth);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 2000;
 app.listen(PORT, () => console.log(`Listening on port ${PORT}...`));

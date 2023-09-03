@@ -1,14 +1,13 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const auth = require("../middleware/auth");
 const userRouter = express.Router();
 userRouter.use(bodyParser.json());
 
-const { Users } = require("../models/users");
+const { Users, validate } = require("../models/users");
 
 userRouter
   .route("/")
-  .get(auth, async (req, res) => {
+  .get(async (req, res) => {
     try {
       const users = await Users.find({});
       if (users) return res.status(200).send(users);
@@ -18,7 +17,16 @@ userRouter
     }
   })
   .post(async (req, res) => {
-    return res.status(400).send("POST operation not supported on /users");
+    try {
+      if (!validate(req.body).error) {
+        const users = await Users.create(req.body);
+        users.save();
+        return res.status(201).send(users);
+      }
+    } catch (error) {
+      console.log(error);
+      return res.status(404).send(error);
+    }
   })
   .put(async (req, res) => {
     return res.status(400).send("PUT operation not supported on /users");
@@ -29,7 +37,7 @@ userRouter
 
 userRouter
   .route("/:id")
-  .get(auth, async (req, res) => {
+  .get(async (req, res) => {
     try {
       const users = await Users.findById(req.params.id);
       if (!users)
@@ -46,7 +54,7 @@ userRouter
   .post(async (req, res) => {
     return res.status(400).send("POST operation not supported on /users/:id");
   })
-  .put(auth, async (req, res) => {
+  .put(async (req, res) => {
     try {
       const users = await Users.findByIdAndUpdate(
         req.params.id,
@@ -64,7 +72,7 @@ userRouter
       return res.status(404).send(error);
     }
   })
-  .delete(auth, async (req, res) => {
+  .delete(async (req, res) => {
     try {
       const users = await Users.findByIdAndRemove(req.params.id);
       if (!users)
